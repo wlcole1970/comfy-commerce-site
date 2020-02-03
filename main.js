@@ -13,6 +13,9 @@ const productsDOM = document.querySelector('.products-center');
 //for cart
 let cart = [];
 
+//buttons
+let buttonsDOM[];
+
 //getting products
 
 /* //non async way
@@ -70,16 +73,61 @@ class UI {
 		});
 		productsDOM.innerHTML = result;
 	};
+
+	//add items to cart
+
+	getCartButtons() {
+		const buttons = [...document.querySelectorAll(".bag-btn")];
+
+		buttonsDOM = buttons;
+
+		buttons.forEach(button => {
+			let id = button.dataset.id;
+			let inCart = cart.find(item => item.id === id);
+			//checks to see if items are in the cart or not
+			if (inCart) {
+				button.innerText = "In Cart";
+				button.disabled = true
+			} //(not using) else {
+			button.addEventListener('click', (event) => {
+				event.target.innerText = "In Cart";
+				event.target.disabled = true;
+				// get product from products based on .id
+
+				//add product to carts
+
+				//cart saved to local storage
+
+				//set cart values
+
+
+				//display cart item
+
+				//show cart
+			});
+			//}
+		});
+	}
 }
 
 //local storage
 
-class Storage { }
+class Storage {
+	static saveProducts(products) {
+		localStorage.setItem("products", JSON.stringify(products));
+	}
+
+}
 
 document.addEventListener('DOMContentLoaded', () => {
 	const ui = new UI();
 	const products = new Products();
 
 	// get all products
-	products.getProducts().then(products => ui.displayProducts(products));
+	products.getProducts().then(products => {
+		ui.displayProducts(products);
+		Storage.saveProducts(products);
+	}).then(() => {
+		ui.getCartButtons();
+	});
 });
