@@ -29,11 +29,11 @@ class Products {
 class Products {
 	async getProducts() {
 		try {
-			let result = await fetch("products.json");
+			let result = await fetch('products.json');
 			//returns data using json method
 			let data = await result.json();
 			let products = data.items;
-			products = products.map(items => {
+			products = products.map((items) => {
 				const { title, price } = items.fields; //gets from fields in json
 				const { id } = items.sys;
 				const image = items.fields.image.fields.file.url;
@@ -42,9 +42,9 @@ class Products {
 					price,
 					id,
 					image
-				}
-			})
-			return products
+				};
+			});
+			return products;
 		} catch (error) {
 			console.log(error);
 		}
@@ -55,9 +55,8 @@ class Products {
 class UI {
 	displayProducts(products) {
 		let result = '';
-		products.forEach(product => {
+		products.forEach((product) => {
 			result +=
-
 				//taken from index.html
 				`
             <article class="product">
@@ -74,32 +73,31 @@ class UI {
 			`;
 		});
 		productsDOM.innerHTML = result;
-	};
+	}
 
 	//add items to cart
 
 	getCartButtons() {
-		const buttons = [...document.querySelectorAll(".bag-btn")];
+		const buttons = [ ...document.querySelectorAll('.bag-btn') ];
 
 		buttonsDOM = buttons;
 
-		buttons.forEach(button => {
+		buttons.forEach((button) => {
 			let id = button.dataset.id;
-			let inCart = cart.find(item => item.id === id);
+			let inCart = cart.find((item) => item.id === id);
 			//checks to see if items are in the cart or not
 			if (inCart) {
-				button.innerText = "In Cart";
-				button.disabled = true
+				button.innerText = 'In Cart';
+				button.disabled = true;
 			} //(not using) else {
 			button.addEventListener('click', (event) => {
-				event.target.innerText = "In Cart";
+				event.target.innerText = 'In Cart';
 				event.target.disabled = true;
 				// get product from products based on .id
 				let cartItem = { ...Storage.getProduct(id), amount: 1 };
 
-
 				//add product to carts
-				cart = [...cart, cartItem];
+				cart = [ ...cart, cartItem ];
 
 				//cart saved to local storage
 				Storage.saveCart(cart);
@@ -110,7 +108,6 @@ class UI {
 				this.addCartItem(cartItem);
 				//show cart
 				this.showCart();
-
 			});
 			//}
 		});
@@ -118,10 +115,10 @@ class UI {
 	setCartValues(cart) {
 		let tempTotal = 0;
 		let itemsTotal = 0;
-		cart.map(item => {
+		cart.map((item) => {
 			tempTotal += item.price * item.amount;
-			itemsTotal += item.amount
-		})
+			itemsTotal += item.amount;
+		});
 
 		cartTotal.innerText = parseFloat(tempTotal.toFixed(2));
 		cartItems.innerText = itemsTotal;
@@ -143,40 +140,65 @@ class UI {
 		</div>
 		`;
 		cartContent.appendChild(div);
-
 	}
 
 	showCart() {
 		cartOverlay.classList.add('transparentBcg');
 		cartDOM.classList.add('showCart');
 	}
+	// button to retreive buttons
+	setupAPP() {
+		cart = Storage.getCart();
+		this.setCartValues(cart);
+		this.populateCart(cart);
+		cartBtn.addEventListener('click', this.showCart);
+		closeCartBtn.addEventListener('click', this.hideCart);
+	}
 
+	populateCart(cart) {
+		cart.forEach((item) => this.addCartItem(item));
+	}
+	hideCart() {
+		cartOverlay.classList.remove('transparentBcg');
+		cartDOM.classList.remove('showCart');
+	}
+	cartLogic() {}
 }
 
 //local storage
 
 class Storage {
 	static saveProducts(products) {
-		localStorage.setItem("products", JSON.stringify(products));
+		localStorage.setItem('products', JSON.stringify(products));
 	}
 	static getProduct(id) {
 		let products = JSON.parse(localStorage.getItem('products'));
-		return products.find(product => product.id === id);
+		return products.find((product) => product.id === id);
 	}
 	static saveCart(cart) {
-		localStorage.setItem('cart', JSON.stringify(cart))
+		localStorage.setItem('cart', JSON.stringify(cart));
+	}
+	//assigns value from ther storage to cart array
+	static getCart() {
+		return localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [];
 	}
 }
 
 document.addEventListener('DOMContentLoaded', () => {
 	const ui = new UI();
 	const products = new Products();
+	//setupp applicaton
+	ui.setupAPP();
 
 	// get all products
-	products.getProducts().then(products => {
-		ui.displayProducts(products);
-		Storage.saveProducts(products);
-	}).then(() => {
-		ui.getCartButtons();
-	});
+	products
+		.getProducts()
+		.then((products) => {
+			ui.displayProducts(products);
+			Storage.saveProducts(products);
+		})
+		.then(() => {
+			ui.getCartButtons();
+			ui.cartLogic();
+		});
 });
