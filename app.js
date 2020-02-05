@@ -45,7 +45,7 @@ class Products {
 //UI of products
 class UI {
     displayProducts(products)
-}
+};
 
 //storage
 
